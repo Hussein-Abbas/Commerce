@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import MinValueValidator
 from django.db import models
 
 
@@ -21,10 +22,24 @@ class Category(models.Model):
 class AuctionListing(models.Model):
     title = models.CharField(max_length=100, null=False, blank=False)
     description = models.TextField(null=False, blank=False)
-    starting_price = models.DecimalField(max_digits=8, decimal_places=2, null=False, blank=False)
-    current_price = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    starting_price = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        null=False,
+        blank=False,
+        validators=[MinValueValidator(0.01)],
+    )
+    current_price = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0.01)],
+    )
     time = models.DateTimeField(auto_now_add=True, null=False, blank=False)
-    bidding_count = models.IntegerField(default=0, null=False, blank=False)
+    bidding_count = models.IntegerField(
+        default=0, null=False, blank=False, validators=[MinValueValidator(0)]
+    )
     highest_bid = models.OneToOneField(
         "Bid", on_delete=models.SET_NULL, null=True, blank=True
     )
@@ -55,7 +70,13 @@ class AuctionListing(models.Model):
 
 
 class Bid(models.Model):
-    amount = models.DecimalField(max_digits=8, decimal_places=2, null=False, blank=False)
+    amount = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        null=False,
+        blank=False,
+        validators=[MinValueValidator(0.01)],
+    )
     auction_listing = models.ForeignKey(
         AuctionListing, on_delete=models.CASCADE, null=False, blank=False
     )
@@ -68,6 +89,10 @@ class Bid(models.Model):
 class Comment(models.Model):
     text = models.TextField(null=False, blank=False)
     auction_listing = models.ForeignKey(
-        AuctionListing, related_name="comments",on_delete=models.CASCADE, null=False, blank=False
+        AuctionListing,
+        related_name="comments",
+        on_delete=models.CASCADE,
+        null=False,
+        blank=False,
     )
     bidder = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
