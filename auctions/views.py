@@ -3,8 +3,9 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django import forms
 
-from .models import User
+from .models import *
 
 
 def index(request):
@@ -63,5 +64,16 @@ def register(request):
         return render(request, "auctions/register.html")
 
 
+class CreateListingForm(forms.ModelForm):
+    class Meta:
+        model = AuctionListing
+        fields = ["title", "description", "starting_price", 
+                  "seller", "category"]
+
+
 def create_listing(request):
-    pass
+    if request.method == "POST":
+        pass
+    return render(request, "auctions/create_listing.html", {
+        "CreateListingForm": CreateListingForm(),
+    })
