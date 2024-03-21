@@ -72,8 +72,24 @@ class CreateListingForm(forms.ModelForm):
 
 
 def create_listing(request):
+    """Create new listing."""
+
+    # When the method is POST.
     if request.method == "POST":
-        pass
+        # Retrives user-submitted data.
+        form = CreateListingForm(request.POST)
+        # Validate the form data.
+        if form.is_valid():
+            # If valid, save the new listing.
+            form.save()
+            # Redircet to the home page.
+            return HttpResponseRedirect(reverse("index"))
+        else:
+            # If invalid, re-render the page with user inputs.
+            return render(request, "auctions/create_listing.html", {
+                "CreateListingForm": CreateListingForm(request.POST),
+            })
+    # When method is GET, render the page with empyt form for creating a new listing.
     return render(request, "auctions/create_listing.html", {
         "CreateListingForm": CreateListingForm(),
     })
