@@ -40,8 +40,8 @@ class AuctionListing(models.Model):
         related_name="auction_listing",
         on_delete=models.SET_DEFAULT,
         default=1,
-        null=True,
-        blank=True,
+        null=False,
+        blank=False,
     )
 
     def __str__(self):
@@ -68,6 +68,6 @@ class Bid(models.Model):
 class Comment(models.Model):
     text = models.TextField(null=False, blank=False)
     auction_listing = models.ForeignKey(
-        AuctionListing, on_delete=models.CASCADE, null=False, blank=False
+        AuctionListing, related_name="comments",on_delete=models.CASCADE, null=False, blank=False
     )
     bidder = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
