@@ -21,8 +21,8 @@ class Category(models.Model):
 class AuctionListing(models.Model):
     title = models.CharField(max_length=100, null=False, blank=False)
     description = models.TextField(null=False, blank=False)
-    starting_price = models.DecimalField(null=False, blank=False)
-    current_price = models.DecimalField(null=True, blank=True)
+    starting_price = models.DecimalField(max_digits=8, decimal_places=2, null=False, blank=False)
+    current_price = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     time = models.DateTimeField(auto_now_add=True, null=False, blank=False)
     bidding_count = models.IntegerField(default=0, null=False, blank=False)
     highest_bid = models.OneToOneField(
@@ -46,6 +46,7 @@ class AuctionListing(models.Model):
 
     def __str__(self):
         return f"{self.title} was sold by {self.seller}"
+
     # Set current_price automaticly.
     def save(self, *args, **kwargs):
         if not self.pk:  # If it's a new instance
@@ -54,7 +55,7 @@ class AuctionListing(models.Model):
 
 
 class Bid(models.Model):
-    amount = models.DecimalField(null=False, blank=False)
+    amount = models.DecimalField(max_digits=8, decimal_places=2, null=False, blank=False)
     auction_listing = models.ForeignKey(
         AuctionListing, on_delete=models.CASCADE, null=False, blank=False
     )
