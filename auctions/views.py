@@ -67,7 +67,7 @@ def register(request):
 class CreateListingForm(forms.ModelForm):
     class Meta:
         model = AuctionListing
-        fields = ["title", "description", "starting_price", 
+        fields = ["title", "description", "image", "starting_price", 
                   "seller", "category"]
 
 
