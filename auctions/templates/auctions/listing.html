@@ -18,8 +18,9 @@
             </form>
         {% else %}
             <li>
-                <form action="{% url 'watchlist' listing.pk %}" methdo="post">
+                <form action="{% url 'watchlist' %}" method="post">
                     {% csrf_token %}
+                    <input type="number" name="listing_id" value="{{ listing.pk }}" hidden>
                     {% if in_watchlist %}
                         <button name="action" type="submit" value="remove">Remove from watch list</button>
                     {% else %}

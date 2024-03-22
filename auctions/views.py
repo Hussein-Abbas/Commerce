@@ -110,5 +110,19 @@ def listing(request, listing_id):
 
 
 
-def watchlist(request, listing_id=None):
-    pass
+def watchlist(request):
+    user = request.user
+    if request.method == "POST":
+        listing_id = int(request.POST.get("listing_id"))
+        listing = AuctionListing.objects.get(pk=listing_id)
+        if request.POST.get("action") == "add":
+            user.watchlist.add(listing)
+            user.save()
+        else:
+            # Remov ti
+            user.watchlist.remove(listing)
+        return HttpResponseRedirect(reverse("listing", args=[listing_id]))
+    listings = user.watchlist.all()
+    return render(request, "auctions/watchlist.html", {
+        "listings": listings
+    })
