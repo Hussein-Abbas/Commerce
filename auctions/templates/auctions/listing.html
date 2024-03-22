@@ -32,11 +32,29 @@
             <li>
                 <form action="{% url 'bid' %}" method="post">
                     {% csrf_token %}
-                    <input type="numer" name="amount" min="0.01">
+                    <input type="numer" name="amount" min="0.01" required>
                     <input type="number" name="listing_id" value="{{ listing.pk }}" hidden>
                     <input type="submit" value="Bid">
                 </form>
             </li>
         {% endif %}
+
+        <li>
+            <h4>Comments</h4>
+            <form action="{% url 'comment' %}" method="post">
+                {% csrf_token %}
+                <textarea name="text" cols="30" rows="10" required></textarea>
+                <input type="number" name="listing_id" value="{{ listing.pk }}" hidden>
+                <input type="submit" value="Comment">
+            </form>
+        </li>
+
+        <h5>Comments</h5>
+        {% for comment in comments %}
+        <li>
+            <div>{{ comment.bidder }}</div>
+            <div>{{ comment.text }}</div>
+        </li>
+        {% endfor %}
     </ul>
 {% endblock %}

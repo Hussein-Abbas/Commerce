@@ -105,11 +105,12 @@ def listing(request, listing_id):
     listing = AuctionListing.objects.get(pk=listing_id)
     return render(request, "auctions/listing.html", {
         "listing": listing,
-        "in_watchlist": user.watchlist.filter(pk=listing_id)
+        "in_watchlist": user.watchlist.filter(pk=listing_id),
+        "comments": Comment.objects.filter(auction_listing=listing)
     })
 
 
-
+@login_required(login_url="login")
 def watchlist(request):
     user = request.user
     if request.method == "POST":
@@ -127,7 +128,7 @@ def watchlist(request):
         "listings": listings
     })
 
-
+@login_required(login_url="login")
 def bid(request):
     if request.method == "POST":
         # Get the listing.
@@ -151,3 +152,17 @@ def bid(request):
                 "error_code": "400 Bad request",
                 "message": "The amount should be more than the current price!",
             })
+
+
+@login_required(login_url="login")
+def comment(request):
+    if request.method == "POST":
+        user = request.user
+        text = request.POST.get("text")
+        listing_id = int(request.POST.get("listing_id"))
+        Comment.objects.create(
+            text=text,
+            auction_listing=AuctionListing.objects.get(pk=listing_id),
+            bidder=user,
+        )
+        return HttpResponseRedirect(reverse("listing", args=[listing_id]))
