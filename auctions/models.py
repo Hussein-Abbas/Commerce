@@ -4,7 +4,7 @@ from django.db import models
 
 
 class User(AbstractUser):
-    watch_list = models.ManyToManyField(
+    watchlist = models.ManyToManyField(
         "AuctionListing", null=True, blank=True, related_name="watchlist_user"
     )
 

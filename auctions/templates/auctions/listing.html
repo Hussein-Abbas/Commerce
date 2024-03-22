@@ -1,0 +1,32 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h1>{{ listing.title }}</h1>
+    <ul>
+
+        <li>Description: {{ listing.description}}</li>
+        <li>Starting price: {{ listing.starting_price }}$</li>
+        <li>Current price: {{ listing.current_price }}$</li>
+        <li>Date was created: {{ listing.time }}</li>
+        <li>Bidding count: {{ listing.bidding_count }}</li>
+        <li>Seller: {{ listing.seller }}</li>
+        <li>Category: {{ listing.category }}</li>
+
+        {% if user.pk == listing.seller.pk %}
+            <form action="{% url 'index' %}" method="post">
+                {% csrf_token %}
+            </form>
+        {% else %}
+            <li>
+                <form action="{% url 'watchlist' listing.pk %}" methdo="post">
+                    {% csrf_token %}
+                    {% if in_watchlist %}
+                        <button name="action" type="submit" value="remove">Remove from watch list</button>
+                    {% else %}
+                        <button name="action" type="submit" value="add">Add to watch list</button>
+                    {% endif %}
+                </form>
+            </li>
+        {% endif %}
+    </ul>
+{% endblock %}
