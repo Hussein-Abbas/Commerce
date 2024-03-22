@@ -13,8 +13,10 @@
         <li>Category: {{ listing.category }}</li>
 
         {% if user.pk == listing.seller.pk %}
-            <form action="{% url 'index' %}" method="post">
+            <form action="{% url 'close' %}" method="post">
                 {% csrf_token %}
+                <input type="submit" value="Close">
+                <input type="numebr" name="listing_id" hidden value="{{ listing.pk }}">
             </form>
         {% else %}
             <li>

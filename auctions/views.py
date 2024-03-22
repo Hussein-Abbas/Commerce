@@ -72,8 +72,7 @@ def register(request):
 class CreateListingForm(forms.ModelForm):
     class Meta:
         model = AuctionListing
-        fields = ["title", "description", "image", "starting_price", 
-                  "seller", "category"]
+        fields = ["title", "description", "image", "starting_price", "category"]
 
 
 def create_listing(request):
@@ -83,6 +82,8 @@ def create_listing(request):
     if request.method == "POST":
         # Retrives user-submitted data.
         form = CreateListingForm(request.POST)
+        # Set the seller value
+        form.instance.seller = request.user
         # Validate the form data.
         if form.is_valid():
             # If valid, save the new listing.
@@ -120,7 +121,7 @@ def watchlist(request):
             user.watchlist.add(listing)
             user.save()
         else:
-            # Remov ti
+            # Remov it
             user.watchlist.remove(listing)
         return HttpResponseRedirect(reverse("listing", args=[listing_id]))
     listings = user.watchlist.all()
@@ -166,3 +167,17 @@ def comment(request):
             bidder=user,
         )
         return HttpResponseRedirect(reverse("listing", args=[listing_id]))
+
+
+@login_required(login_url="login")
+def close(request):
+    listing = AuctionListing.objects.get(pk=int(request.POST.get("listing_id")))
+    seller = listing.seller
+    if request.user == seller:
+        listing.status = False
+        listing.save()
+        return HttpResponseRedirect(reverse("index"))
+    return render(request, "auctions/error", {
+        "error_code": "403 Forbiden",
+        "message": "You can't clse a listing that you don't selle it!"
+    })
