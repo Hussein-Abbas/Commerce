@@ -28,6 +28,15 @@
                     {% endif %}
                 </form>
             </li>
+
+            <li>
+                <form action="{% url 'bid' %}" method="post">
+                    {% csrf_token %}
+                    <input type="numer" name="amount" min="0.01">
+                    <input type="number" name="listing_id" value="{{ listing.pk }}" hidden>
+                    <input type="submit" value="Bid">
+                </form>
+            </li>
         {% endif %}
     </ul>
 {% endblock %}

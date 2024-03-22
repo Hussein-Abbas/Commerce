@@ -126,3 +126,28 @@ def watchlist(request):
     return render(request, "auctions/watchlist.html", {
         "listings": listings
     })
+
+
+def bid(request):
+    if request.method == "POST":
+        # Get the listing.
+        listing = AuctionListing.objects.get(pk=int(request.POST.get("listing_id")))
+        amount = float(request.POST.get("amount"))
+        user = request.user
+        if amount > listing.current_price:
+            bid = Bid.objects.create(
+                amount=amount,
+                auction_listing=listing,
+                bidder=user,
+            )
+            listing.current_price = amount
+            listing.bidding_count += 1
+            listing.highest_bid = bid
+            listing.save()
+
+            return HttpResponseRedirect(reverse("listing", args=[request.POST.get("listing_id")]))
+        else:
+            return render(request, "auctions/error.html", {
+                "error_code": "400 Bad request",
+                "message": "The amount should be more than the current price!",
+            })
