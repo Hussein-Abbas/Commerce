@@ -4,11 +4,13 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django import forms
+from django.contrib.auth.decorators import login_required
 
 from .models import *
 
 
 def index(request):
+    # Retrives all active listings.
     listings = AuctionListing.objects.filter(status=True)
     return render(request, "auctions/index.html", {
         "listings": listings,
@@ -75,7 +77,7 @@ class CreateListingForm(forms.ModelForm):
 
 
 def create_listing(request):
-    """Create new listing."""
+    """Create a new listing."""
 
     # When the method is POST.
     if request.method == "POST":
@@ -95,4 +97,32 @@ def create_listing(request):
     # When method is GET, render the page with empyt form for creating a new listing.
     return render(request, "auctions/create_listing.html", {
         "CreateListingForm": CreateListingForm(),
+    })
+
+@login_required(login_url="login")
+def listing(request, listing_id):
+    user = request.user
+    listing = AuctionListing.objects.get(pk=listing_id)
+    return render(request, "auctions/listing.html", {
+        "listing": listing,
+        "in_watchlist": user.watchlist.filter(pk=listing_id)
+    })
+
+
+
+def watchlist(request):
+    user = request.user
+    if request.method == "POST":
+        listing_id = int(request.POST.get("listing_id"))
+        listing = AuctionListing.objects.get(pk=listing_id)
+        if request.POST.get("action") == "add":
+            user.watchlist.add(listing)
+            user.save()
+        else:
+            # Remov ti
+            user.watchlist.remove(listing)
+        return HttpResponseRedirect(reverse("listing", args=[listing_id]))
+    listings = user.watchlist.all()
+    return render(request, "auctions/watchlist.html", {
+        "listings": listings
     })
