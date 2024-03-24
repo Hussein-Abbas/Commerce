@@ -181,3 +181,17 @@ def close(request):
         "error_code": "403 Forbiden",
         "message": "You can't clse a listing that you don't selle it!"
     })
+
+
+
+def category(request, category_id=None):
+    if category_id:
+        category = Category.objects.get(pk=category_id)
+        listings = AuctionListing.objects.filter(category=category, status=True)
+        return render(request, "auctions/category.html", {
+            "listings": listings,
+        })
+    categories = Category.objects.all()
+    return render(request, "auctions/categories.html", {
+        "categories": categories,
+    })
