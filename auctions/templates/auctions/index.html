@@ -7,9 +7,9 @@
         {% for listing in listings %}
             <a href="{% url 'listing' listing.pk %}">
                 <li>
-                    <div>Title: {{ listing.title }}</div>
+                    <div>Title: {{ listing }}</div>
                     <div>Description: {{ listing.description }}</div>
-                    <div>Current Price: {{ listing.current_price }}</div>
+                    <div>Current Price: {{ listing.current_price }}$</div>
 
                     {% if listing.image %}
                         <img src="{{listing.image}}" alt="{{ listing.title }} image">

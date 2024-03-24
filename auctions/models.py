@@ -62,7 +62,7 @@ class AuctionListing(models.Model):
     )
 
     def __str__(self):
-        return f"{self.title} was sold by {self.seller}"
+        return self.title
 
     # Set current_price automaticly.
     def save(self, *args, **kwargs):
@@ -85,7 +85,7 @@ class Bid(models.Model):
     bidder = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
 
     def __str__(self):
-        return f"{self.amount}$ by {self.bidder}"
+        return f"{self.amount}$"
 
 
 class Comment(models.Model):
@@ -98,3 +98,6 @@ class Comment(models.Model):
         blank=False,
     )
     bidder = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
+
+    def __str__(self):
+        return self.text

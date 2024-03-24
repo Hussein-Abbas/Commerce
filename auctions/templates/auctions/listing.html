@@ -12,7 +12,7 @@
         <li>Seller: {{ listing.seller }}</li>
         <li>Category: {{ listing.category }}</li>
 
-        {% if user.pk == listing.seller.pk %}
+        {% if user == listing.seller %}
             <form action="{% url 'close' %}" method="post">
                 {% csrf_token %}
                 <input type="submit" value="Close">
@@ -53,10 +53,10 @@
 
         <h5>Comments</h5>
         {% for comment in comments %}
-        <li>
-            <div>{{ comment.bidder }}</div>
-            <div>{{ comment.text }}</div>
-        </li>
+            <li>
+                <div>{{ comment.bidder }}</div>
+                <div>{{ comment }}</div>
+            </li>
         {% endfor %}
     </ul>
 {% endblock %}
