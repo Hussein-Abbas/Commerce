@@ -3,7 +3,6 @@
 {% block body %}
     <h1>{{ listing.title }}</h1>
     <ul>
-
         <li>Description: {{ listing.description}}</li>
         <li>Starting price: {{ listing.starting_price }}$</li>
         <li>Current price: {{ listing.current_price }}$</li>
@@ -11,52 +10,54 @@
         <li>Bidding count: {{ listing.bidding_count }}</li>
         <li>Seller: {{ listing.seller }}</li>
         <li>Category: {{ listing.category }}</li>
-
-        {% if user == listing.seller %}
-            <form action="{% url 'close' %}" method="post">
-                {% csrf_token %}
-                <input type="submit" value="Close">
-                <input type="numebr" name="listing_id" hidden value="{{ listing.pk }}">
-            </form>
+        {% if not listing.status %}
+            <li>This listing has been closed!</li>
         {% else %}
-            <li>
-                <form action="{% url 'watchlist' %}" method="post">
+            {% if user == listing.seller %}
+                <form action="{% url 'close' %}" method="post">
                     {% csrf_token %}
-                    <input type="number" name="listing_id" value="{{ listing.pk }}" hidden>
-                    {% if in_watchlist %}
-                        <button name="action" type="submit" value="remove">Remove from watch list</button>
-                    {% else %}
-                        <button name="action" type="submit" value="add">Add to watch list</button>
-                    {% endif %}
+                    <input type="submit" value="Close">
+                    <input type="numebr" name="listing_id" hidden value="{{ listing.pk }}">
                 </form>
-            </li>
-
+            {% else %}
+                <li>
+                    <form action="{% url 'watchlist' %}" method="post">
+                        {% csrf_token %}
+                        <input type="number" name="listing_id" value="{{ listing.pk }}" hidden>
+                        {% if in_watchlist %}
+                            <button name="action" type="submit" value="remove">Remove from watch list</button>
+                        {% else %}
+                            <button name="action" type="submit" value="add">Add to watch list</button>
+                        {% endif %}
+                    </form>
+                </li>
+                <li>
+                    <form action="{% url 'bid' %}" method="post">
+                        {% csrf_token %}
+                        <input type="numer" name="amount" min="0.01" required>
+                        <input type="number" name="listing_id" value="{{ listing.pk }}" hidden>
+                        <input type="submit" value="Bid">
+                    </form>
+                </li>
+            {% endif %}
             <li>
-                <form action="{% url 'bid' %}" method="post">
+                <h4>Comments</h4>
+                <form action="{% url 'comment' %}" method="post">
                     {% csrf_token %}
-                    <input type="numer" name="amount" min="0.01" required>
+                    <textarea name="text" cols="30" rows="10" required></textarea>
                     <input type="number" name="listing_id" value="{{ listing.pk }}" hidden>
-                    <input type="submit" value="Bid">
+                    <input type="submit" value="Comment">
                 </form>
             </li>
         {% endif %}
-
-        <li>
-            <h4>Comments</h4>
-            <form action="{% url 'comment' %}" method="post">
-                {% csrf_token %}
-                <textarea name="text" cols="30" rows="10" required></textarea>
-                <input type="number" name="listing_id" value="{{ listing.pk }}" hidden>
-                <input type="submit" value="Comment">
-            </form>
-        </li>
-
         <h5>Comments</h5>
         {% for comment in comments %}
             <li>
                 <div>{{ comment.bidder }}</div>
                 <div>{{ comment }}</div>
             </li>
+        {% empty %}
+            <li>No comments.</li>
         {% endfor %}
     </ul>
 {% endblock %}
