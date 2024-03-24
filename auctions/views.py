@@ -124,7 +124,7 @@ def watchlist(request):
             # Remov it
             user.watchlist.remove(listing)
         return HttpResponseRedirect(reverse("listing", args=[listing_id]))
-    listings = user.watchlist.all()
+    listings = user.watchlist.filter(status=True)
     return render(request, "auctions/watchlist.html", {
         "listings": listings
     })
