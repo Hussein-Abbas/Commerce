@@ -237,23 +237,38 @@ def comment(request):
 
 @login_required(login_url="login")
 def close(request):
-    # Get the listing and validate it
-    if not isinstance(listing := get_listing(request, get_listing_id(request)), AuctionListing):
-        return listing
+    if request.method == "POST":
+        # Validate and retrieve the listing ID.
+        listing_id = get_listing_id(request)
+        if not isinstance(listing_id, int):
+            return listing_id
 
-    seller = listing.seller
-    if request.user == seller:
-        # Change status to be False
-        listing.status = False
-        # Remove the listing from any watchlist.
-        for user in listing.watchlist_user.all():
-            user.watchlist.remove(listing)
-        # Save changes for the current listing.
-        listing.save()
-        return HttpResponseRedirect(reverse("index"))
-    return render(request, "auctions/error.html", {
-            "message": "You can't close a listing that you don't sell it!",
+        # Validate and retrieve the listing object.
+        listing = get_listing(request, listing_id)
+        if not isinstance(listing, AuctionListing):
+            return listing
+
+        # Validate if the user is the seller of this listing.
+        listing_seller = listing.seller
+        if request.user == listing_seller:
+            listing.status = False
+
+            # Remove the listing from any watchlist.
+            listing.watchlist_user.clear()
+
+            listing.save()
+
+            # Redirect the user to home page.
+            return HttpResponseRedirect(reverse("index"))
+
+        return render(request, "auctions/error.html", {
+                "message": "Only the seller of this listing can close it."
         })
+
+    # If request method is GET, render the error page.
+    return render(request, "auctions/error.html", {
+        "message": "Use the form to close the listing."
+    })
 
 
 def category(request, category_id=None):
