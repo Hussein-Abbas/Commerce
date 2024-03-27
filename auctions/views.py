@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django import forms
 from django.contrib.auth.decorators import login_required
@@ -92,10 +92,8 @@ def create_listing(request):
 
 @login_required(login_url="login")
 def listing(request, listing_id):
-    # Get the listing.
+    # Validate and retrieve listing objcet.
     listing = get_listing(request, listing_id)
-
-    # Return the error response directly if listing is not valid.
     if not isinstance(listing, AuctionListing):
       return listing 
 
@@ -106,10 +104,10 @@ def listing(request, listing_id):
     comments = Comment.objects.filter(auction_listing=listing)
 
     return render(request, "auctions/listing.html", {
-            "listing": listing,
-            "in_watchlist": in_watchlist,
-            "comments": comments
-        })
+        "listing": listing,
+        "in_watchlist": in_watchlist,
+        "comments": comments
+    })
 
 
 @login_required(login_url="login")
@@ -272,13 +270,29 @@ def close(request):
 
 
 def category(request, category_id=None):
+    # If category ID is provided in the URL.
     if category_id:
-        category = Category.objects.get(pk=category_id)
-        listings = AuctionListing.objects.filter(category=category, status=True)
+        # Validate and retrieve the category object.
+        try:
+            category = Category.objects.get(pk=category_id)
+        except Category.DoesNotExist:
+            return render(request, "auctions/error.html", {
+                "message": f"There is no category with ID {category_id}."
+            })
+
+        # Retrieve all active auction listings in this category.
+        listings = AuctionListing.objects.filter(
+            category=category, 
+            status=True,
+        )
+
+        # Render the category page with its listings.
         return render(request, "auctions/category.html", {
                 "listings": listings,
         })
+
+    # If no category ID is provided, render the pgae with all categories.
     categories = Category.objects.all()
     return render(request, "auctions/categories.html", {
             "categories": categories,
-        })
+    })
