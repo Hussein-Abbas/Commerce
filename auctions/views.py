@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django import forms
 from django.contrib.auth.decorators import login_required
@@ -92,10 +92,8 @@ def create_listing(request):
 
 @login_required(login_url="login")
 def listing(request, listing_id):
-    # Get the listing.
+    # Validate and retrieve listing objcet.
     listing = get_listing(request, listing_id)
-
-    # Return the error response directly if listing is not valid.
     if not isinstance(listing, AuctionListing):
       return listing 
 
@@ -106,10 +104,10 @@ def listing(request, listing_id):
     comments = Comment.objects.filter(auction_listing=listing)
 
     return render(request, "auctions/listing.html", {
-            "listing": listing,
-            "in_watchlist": in_watchlist,
-            "comments": comments
-        })
+        "listing": listing,
+        "in_watchlist": in_watchlist,
+        "comments": comments
+    })
 
 
 @login_required(login_url="login")
@@ -152,100 +150,149 @@ def watchlist(request):
 
 @login_required(login_url="login")
 def bid(request):
-    # When user submit form.
     if request.method == "POST":
-        # Get user.
         user = request.user
 
-        # Get listing id and validate it.
-        if not isinstance(listing_id := get_listing_id(request), int):
+        # Validate and retrieve the listing ID.
+        listing_id = get_listing_id(request)
+        if not isinstance(listing_id, int):
             return listing_id
 
-        # Get the listing and validate it.
-        if not isinstance(listing := get_listing(request, listing_id), AuctionListing):
+        # Validate and retrieve the auction listing object.
+        listing = get_listing(request, listing_id)
+        if not isinstance(listing, AuctionListing):
             return listing
 
-        # Get amount 
+        # Validate and retrieve the bid amount.
         try:
             amount = float(request.POST.get("amount"))
             message = None
         except ValueError:
-            message = "The amount should be numebr!"
-        except Exception:
-            message = "There isn't any amount!"
+            message = "The amount should be a numebr!"
 
-        # If message has value, return error code with message.
+        # If an error message exists, render the error message.
         if message:
             return render(request, "auctions/error.html", {
                 "message": message
             })
 
-        # Validate amount greater than current price.
-        if amount > listing.current_price:
-            # Create new bid.
-            bid = Bid.objects.create(amount=amount, auction_listing=listing, bidder=user)
-
-            # Set the values of the new listing.
-            listing.current_price = amount
-            
-            listing.bidding_count += 1
-            listing.highest_bid = bid
-            # Save the new listing
-            listing.save()
-            # Redirect user to the new listing page
-            return HttpResponseRedirect(reverse("listing", args=[listing_id]))
-        # If amount isn't greater than current price, render error page.
-        else:
+        # Ensure the bid amount is greater than the current price.
+        if amount <= listing.current_price:
             return render(request, "auctions/error.html", {
-                "message": "The amount should be more than the current price!",
+                "message": f"The amount should be greater than {listing.current_price}$",
             })
+
+        # Create a new bid.
+        Bid.objects.create(amount=amount, auction_listing=listing, bidder=user)
+
+        # Update the current price and bidding count of the listing.
+        listing.current_price = amount
+        listing.bidding_count += 1
+        listing.save()
+
+        # Redirect the user to the new listing page.
+        return HttpResponseRedirect(reverse("listing", args=[listing_id]))
+
+    # If request method is GET, render error paeg 
+    return render(request, "auctions/error.html", {
+        "message": "Use the form to place a bid."
+    })
 
 
 @login_required(login_url="login")
 def comment(request):
     if request.method == "POST":
-        # Get user.
         user = request.user
-        # Get the content of comment.
-        text = request.POST.get("text")
-        # Get listing id and validate it
-        if not isinstance(listing_id := get_listing_id(request), int):
+
+        # Validate and retrieve comment text.
+        text = str(request.POST.get("text"))
+        if not text:
+            return render(request, "auctions/error.html", {
+                "message": "Your comment must have text content."
+            })
+
+        # Validate and retrieve listing ID.
+        listing_id = get_listing_id(request)
+        if not isinstance(listing_id, int):
             return listing_id
-        Comment.objects.create(text=text, bidder=user,
-            auction_listing=AuctionListing.objects.get(pk=listing_id))
-        # Redircet user to the same lising page
+
+        # Validate and retrieve listing.
+        listing = get_listing(request, listing_id, status=True)
+        if not isinstance(listing, AuctionListing):
+            return listing
+
+        # Create a new comment object.
+        Comment.objects.create(text=text, bidder=user, auction_listing=listing)
+
+        # Redircet the user to the same lising page.
         return HttpResponseRedirect(reverse("listing", args=[listing_id]))
+
+    # If request method is GET, render the error page.
+    return render(request, "auctions/error.html", {
+        "message": "Use form to place a comment."
+    })
 
 
 @login_required(login_url="login")
 def close(request):
-    # Get the listing and validate it
-    if not isinstance(listing := get_listing(request, get_listing_id(request)), AuctionListing):
-        return listing
+    if request.method == "POST":
+        # Validate and retrieve the listing ID.
+        listing_id = get_listing_id(request)
+        if not isinstance(listing_id, int):
+            return listing_id
 
-    seller = listing.seller
-    if request.user == seller:
-        # Change status to be False
-        listing.status = False
-        # Remove the listing from any watchlist.
-        for user in listing.watchlist_user.all():
-            user.watchlist.remove(listing)
-        # Save changes for the current listing.
-        listing.save()
-        return HttpResponseRedirect(reverse("index"))
-    return render(request, "auctions/error.html", {
-            "message": "You can't close a listing that you don't sell it!",
+        # Validate and retrieve the listing object.
+        listing = get_listing(request, listing_id)
+        if not isinstance(listing, AuctionListing):
+            return listing
+
+        # Validate if the user is the seller of this listing.
+        listing_seller = listing.seller
+        if request.user == listing_seller:
+            listing.status = False
+
+            # Remove the listing from any watchlist.
+            listing.watchlist_user.clear()
+
+            listing.save()
+
+            # Redirect the user to home page.
+            return HttpResponseRedirect(reverse("index"))
+
+        return render(request, "auctions/error.html", {
+                "message": "Only the seller of this listing can close it."
         })
+
+    # If request method is GET, render the error page.
+    return render(request, "auctions/error.html", {
+        "message": "Use the form to close the listing."
+    })
 
 
 def category(request, category_id=None):
+    # If category ID is provided in the URL.
     if category_id:
-        category = Category.objects.get(pk=category_id)
-        listings = AuctionListing.objects.filter(category=category, status=True)
+        # Validate and retrieve the category object.
+        try:
+            category = Category.objects.get(pk=category_id)
+        except Category.DoesNotExist:
+            return render(request, "auctions/error.html", {
+                "message": f"There is no category with ID {category_id}."
+            })
+
+        # Retrieve all active auction listings in this category.
+        listings = AuctionListing.objects.filter(
+            category=category, 
+            status=True,
+        )
+
+        # Render the category page with its listings.
         return render(request, "auctions/category.html", {
                 "listings": listings,
         })
+
+    # If no category ID is provided, render the pgae with all categories.
     categories = Category.objects.all()
     return render(request, "auctions/categories.html", {
             "categories": categories,
-        })
+    })
