@@ -152,54 +152,53 @@ def watchlist(request):
 
 @login_required(login_url="login")
 def bid(request):
-    # When user submit form.
     if request.method == "POST":
-        # Get user.
         user = request.user
 
-        # Get listing id and validate it.
-        if not isinstance(listing_id := get_listing_id(request), int):
+        # Validate and retrieve the listing ID.
+        listing_id = get_listing_id(request)
+        if not isinstance(listing_id, int):
             return listing_id
 
-        # Get the listing and validate it.
-        if not isinstance(listing := get_listing(request, listing_id), AuctionListing):
+        # Validate and retrieve the auction listing object.
+        listing = get_listing(request, listing_id)
+        if not isinstance(listing, AuctionListing):
             return listing
 
-        # Get amount 
+        # Validate and retrieve the bid amount.
         try:
             amount = float(request.POST.get("amount"))
             message = None
         except ValueError:
-            message = "The amount should be numebr!"
-        except Exception:
-            message = "There isn't any amount!"
+            message = "The amount should be a numebr!"
 
-        # If message has value, return error code with message.
+        # If an error message exists, render the error message.
         if message:
             return render(request, "auctions/error.html", {
                 "message": message
             })
 
-        # Validate amount greater than current price.
-        if amount > listing.current_price:
-            # Create new bid.
-            bid = Bid.objects.create(amount=amount, auction_listing=listing, bidder=user)
-
-            # Set the values of the new listing.
-            listing.current_price = amount
-            
-            listing.bidding_count += 1
-            listing.highest_bid = bid
-            # Save the new listing
-            listing.save()
-            # Redirect user to the new listing page
-            return HttpResponseRedirect(reverse("listing", args=[listing_id]))
-        # If amount isn't greater than current price, render error page.
-        else:
+        # Ensure the bid amount is greater than the current price.
+        if amount <= listing.current_price:
             return render(request, "auctions/error.html", {
-                "message": "The amount should be more than the current price!",
+                "message": f"The amount should be greater than {listing.current_price}$",
             })
 
+        # Create a new bid.
+        Bid.objects.create(amount=amount, auction_listing=listing, bidder=user)
+
+        # Update the current price and bidding count of the listing.
+        listing.current_price = amount
+        listing.bidding_count += 1
+        listing.save()
+
+        # Redirect the user to the new listing page.
+        return HttpResponseRedirect(reverse("listing", args=[listing_id]))
+
+    # If request method is GET, render error paeg 
+    return render(request, "auctions/error.html", {
+        "message": "Use the form to place a bid."
+    })
 
 @login_required(login_url="login")
 def comment(request):
