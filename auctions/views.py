@@ -200,20 +200,39 @@ def bid(request):
         "message": "Use the form to place a bid."
     })
 
+
 @login_required(login_url="login")
 def comment(request):
     if request.method == "POST":
-        # Get user.
         user = request.user
-        # Get the content of comment.
-        text = request.POST.get("text")
-        # Get listing id and validate it
-        if not isinstance(listing_id := get_listing_id(request), int):
+
+        # Validate and retrieve comment text.
+        text = str(request.POST.get("text"))
+        if not text:
+            return render(request, "auctions/error.html", {
+                "message": "Your comment must have text content."
+            })
+
+        # Validate and retrieve listing ID.
+        listing_id = get_listing_id(request)
+        if not isinstance(listing_id, int):
             return listing_id
-        Comment.objects.create(text=text, bidder=user,
-            auction_listing=AuctionListing.objects.get(pk=listing_id))
-        # Redircet user to the same lising page
+
+        # Validate and retrieve listing.
+        listing = get_listing(request, listing_id, status=True)
+        if not isinstance(listing, AuctionListing):
+            return listing
+
+        # Create a new comment object.
+        Comment.objects.create(text=text, bidder=user, auction_listing=listing)
+
+        # Redircet the user to the same lising page.
         return HttpResponseRedirect(reverse("listing", args=[listing_id]))
+
+    # If request method is GET, render the error page.
+    return render(request, "auctions/error.html", {
+        "message": "Use form to place a comment."
+    })
 
 
 @login_required(login_url="login")
