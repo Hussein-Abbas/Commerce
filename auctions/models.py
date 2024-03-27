@@ -51,7 +51,7 @@ class Bid(models.Model):
 class Comment(models.Model):
     text = models.TextField(blank=False)
     auction_listing = models.ForeignKey(AuctionListing, related_name="comments", on_delete=models.CASCADE, blank=False)
-    bidder = models.ForeignKey(User, on_delete=models.CASCADE, blank=False)
+    commenter = models.ForeignKey(User, on_delete=models.CASCADE, blank=False)
 
     def __str__(self):
         return self.text
