@@ -19,7 +19,7 @@ def get_listing_id(request):
     }) 
 
 
-def get_listing(request, listing_id):
+def get_listing(request, listing_id, status=None):
     """if type(listing_id) is not int:
         return render(request, "auctions/error.html", {
             "error_code": "400 bad request",
@@ -27,7 +27,9 @@ def get_listing(request, listing_id):
         })
     """
     try:
-        return AuctionListing.objects.get(pk=listing_id, status=True)
+        if status in (True, False):
+            return AuctionListing.objects.get(pk=listing_id, status=status)
+        return AuctionListing.objects.get(pk=listing_id)
     except Exception:
         return render(request, "auctions/error.html", {
                 "error_code": "404 not found",

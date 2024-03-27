@@ -78,86 +78,75 @@ class CreateListingForm(forms.ModelForm):
 
 def create_listing(request):
     """Create a new listing."""
+    form = CreateListingForm(request.POST or None)
 
-    # When the method is POST.
-    if request.method == "POST":
-        # Retrives user-submitted data.
-        form = CreateListingForm(request.POST)
-        # Set the seller value
+    if request.method == "POST" and form.is_valid():
         form.instance.seller = request.user
-        # Validate the form data.
-        if form.is_valid():
-            # If valid, save the new listing.
-            form.save()
-            # Redircet to the home page.
-            return HttpResponseRedirect(reverse("index"))
-        else:
-            # If invalid, re-render the page with user inputs.
-            return render(request, "auctions/create_listing.html", {
-                    "CreateListingForm": CreateListingForm(request.POST),
-            })
-    # When method is GET, render the page with empyt form for creating a new listing.
+        form.save()
+        return HttpResponseRedirect(reverse("index"))
+
     return render(request, "auctions/create_listing.html", {
-            "CreateListingForm": CreateListingForm(),
+            "CreateListingForm": form,
     })
 
 
 @login_required(login_url="login")
 def listing(request, listing_id):
-    user = request.user
+    # Get the listing.
     listing = get_listing(request, listing_id)
-    if type(listing) is not AuctionListing:
-      return listing
+
+    # Return the error response directly if listing is not valid.
+    if not isinstance(listing, AuctionListing):
+      return listing 
+
+    # Check if the listing is in the user's watchlist.
+    in_watchlist = request.user.watchlist.filter(pk=listing_id).exists()
+
+    # Get comments associated with the listing.
+    comments = Comment.objects.filter(auction_listing=listing)
 
     return render(request, "auctions/listing.html", {
             "listing": listing,
-            "in_watchlist": user.watchlist.filter(pk=listing_id),
-            "comments": Comment.objects.filter(auction_listing=listing),
+            "in_watchlist": in_watchlist,
+            "comments": comments
         })
 
 
 @login_required(login_url="login")
 def watchlist(request):
     user = request.user
+
     if request.method == "POST":
-        # Get listing id
+        # Get listing id and validtade it.
         listing_id = get_listing_id(request)
-        # Validtade it
         if not isinstance(listing_id, int):
             return listing_id
-        # Get listing.
+
+        # Get listing and validate it.
         listing = get_listing(request, listing_id)
-        # Validate it.
         if not isinstance(listing, AuctionListing):
             return listing
+
         # Get action to add or remove listing form watchlist.
-        try:
-            action = request.POST.get("action")
-        except Exception:
-            return render(request, "auctions/error.html", {
-                "error_code": "400 bad request",
-                "message": "There isn't any action!"
-            })
-        # Validate action.
+        action = request.POST.get("action")
+
+        # Add or remove watch list or render error.
         if action == "add":
-            # Add listing to watchlist.
             user.watchlist.add(listing)
-            # Save the user.
-            user.save()
         elif action == "remove":
-            # Remove it.
             user.watchlist.remove(listing)
-        # If action isn't add or remove, render error page.
         else:
             return render(request, "auctions/error.html", {
-                    "error_code": "400 bad request",
-                    "message": f"We dont' support {action} action!",
+                 "message": f"Invalid action",
             })
-        # Display to the user the same listing page.
+
+        # Redirect back to the same listing page.
         return HttpResponseRedirect(reverse("listing", args=[listing_id]))
+
     # When the method is GET, display all active user listings.
+    listings = user.watchlist.all() # Retrieve watchlist items.
     return render(request, "auctions/watchlist.html", {
-        "listings": user.watchlist.filter(status=True)
+        "listings": listings
     })
 
 
@@ -167,51 +156,48 @@ def bid(request):
     if request.method == "POST":
         # Get user.
         user = request.user
+
         # Get listing id and validate it.
-        listing_id = get_listing_id(request)
-        if not isinstance(listing_id, int):
+        if not isinstance(listing_id := get_listing_id(request), int):
             return listing_id
+
         # Get the listing and validate it.
-        listing = get_listing(request, listing_id)
-        if not isinstance(listing, AuctionListing):
+        if not isinstance(listing := get_listing(request, listing_id), AuctionListing):
             return listing
+
         # Get amount 
         try:
             amount = float(request.POST.get("amount"))
             message = None
         except ValueError:
-            message = "The amount should be numebr"
+            message = "The amount should be numebr!"
         except Exception:
-            message = "There isn't amount!"
+            message = "There isn't any amount!"
+
         # If message has value, return error code with message.
         if message:
             return render(request, "auctions/error.html", {
-                "error_code": "400 bad request",
                 "message": message
             })
+
         # Validate amount greater than current price.
         if amount > listing.current_price:
             # Create new bid.
-            bid = Bid.objects.create(
-                amount=amount,
-                auction_listing=listing,
-                bidder=user,
-            )
+            bid = Bid.objects.create(amount=amount, auction_listing=listing, bidder=user)
+
             # Set the values of the new listing.
             listing.current_price = amount
+            
             listing.bidding_count += 1
             listing.highest_bid = bid
             # Save the new listing
             listing.save()
             # Redirect user to the new listing page
-            return HttpResponseRedirect(
-                reverse("listing", args=[listing_id])
-            )
+            return HttpResponseRedirect(reverse("listing", args=[listing_id]))
         # If amount isn't greater than current price, render error page.
         else:
             return render(request, "auctions/error.html", {
-                    "error_code": "400 Bad request",
-                    "message": "The amount should be more than the current price!",
+                "message": "The amount should be more than the current price!",
             })
 
 
@@ -223,32 +209,31 @@ def comment(request):
         # Get the content of comment.
         text = request.POST.get("text")
         # Get listing id and validate it
-        listing_id = get_listing_id(request)
-        if not isinstance(listing_id, int):
+        if not isinstance(listing_id := get_listing_id(request), int):
             return listing_id
-
-        Comment.objects.create(
-            text=text,
-            auction_listing=AuctionListing.objects.get(pk=listing_id),
-            bidder=user,
-        )
+        Comment.objects.create(text=text, bidder=user,
+            auction_listing=AuctionListing.objects.get(pk=listing_id))
         # Redircet user to the same lising page
         return HttpResponseRedirect(reverse("listing", args=[listing_id]))
 
 
 @login_required(login_url="login")
 def close(request):
-    listing = get_listing(request, get_listing_id(request))
-    if not isinstance(listing, AuctionListing):
+    # Get the listing and validate it
+    if not isinstance(listing := get_listing(request, get_listing_id(request)), AuctionListing):
         return listing
 
     seller = listing.seller
     if request.user == seller:
+        # Change status to be False
         listing.status = False
+        # Remove the listing from any watchlist.
+        for user in listing.watchlist_user.all():
+            user.watchlist.remove(listing)
+        # Save changes for the current listing.
         listing.save()
         return HttpResponseRedirect(reverse("index"))
     return render(request, "auctions/error.html", {
-            "error_code": "403 Forbiden",
             "message": "You can't close a listing that you don't sell it!",
         })
 

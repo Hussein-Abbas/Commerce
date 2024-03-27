@@ -21,7 +21,7 @@ class AuctionListing(models.Model):
     status = models.BooleanField(default=True)
     title = models.CharField(max_length=100, blank=False)
     description = models.TextField(blank=False)
-    image = models.URLField()
+    image = models.URLField(blank=True)
     starting_price = models.DecimalField(max_digits=8, decimal_places=2, blank=False, validators=[MinValueValidator(0.01)])
     current_price = models.DecimalField(max_digits=8, decimal_places=2, validators=[MinValueValidator(0.01)])
     time = models.DateTimeField(auto_now_add=True)
