@@ -5,17 +5,20 @@
 
     <ul>
         {% for listing in listings %}
-            <a href="{% url 'listing' listing.pk %}">
-                <li>
-                    <div>Title: {{ listing }}</div>
-                    <div>Description: {{ listing.description }}</div>
-                    <div>Current Price: {{ listing.current_price }}$</div>
-
+            <div class="listing">
+                <div class="listing-img">
                     {% if listing.image %}
-                        <img src="{{listing.image}}" alt="{{ listing.title }} image">
+                        <img width="150" src="{{ listing.image }}" alt="{{ listing.title }} image">
                     {% endif %}
-                </li>
-            </a>
+                </div>
+                <div class="listing-description">
+                    <a href="{% url 'listing' listing.pk %}">
+                        <div class="listing-title">Title: {{ listing }}</div>
+                    </a>
+                    <div>Price: ${{ listing.current_price }}</div>
+                    <div class="created_at">Created at: {{ listing.created_at }}</div>
+                </div>
+            </div>
         {% empty %}
             <li>No listings.</li>
         {% endfor %}
