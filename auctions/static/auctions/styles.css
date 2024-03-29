@@ -1,5 +1,6 @@
 body {
     padding: 10px;
+    font-family: Arial, sans-serif;
 }
 
 
@@ -37,4 +38,34 @@ body {
     font-size: 13px;
     font-weight: 400;
     color: gray;
+}
+
+.description {
+    margin-top: 20px;
+    font-size: 18px;
+    color: rgb(61, 60, 60);
+}
+
+main {
+    margin-left: 30px;
+}
+
+
+.price {
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.commenter {
+    font-size: 20px;
+}
+
+.comment {
+    margin-left: 20px;
+}
+
+#id_title, #id_image {
+    width: 90%;
+    padding: 3px 8px;
+    margin-bottom: 20px;
 }

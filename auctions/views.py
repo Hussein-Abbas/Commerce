@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render
 from django.urls import reverse
 from django import forms
 from django.contrib.auth.decorators import login_required
@@ -179,7 +179,7 @@ def bid(request):
         # Ensure the bid amount is greater than the current price.
         if amount <= listing.current_price:
             return render(request, "auctions/error.html", {
-                "message": f"The amount should be greater than {listing.current_price}$",
+                "message": f"The amount should be greater than ${listing.current_price}",
             })
 
         # Create a new bid.
@@ -222,7 +222,7 @@ def comment(request):
             return listing
 
         # Create a new comment object.
-        Comment.objects.create(text=text, bidder=user, auction_listing=listing)
+        Comment.objects.create(text=text, commenter=user, auction_listing=listing)
 
         # Redircet the user to the same lising page.
         return HttpResponseRedirect(reverse("listing", args=[listing_id]))
