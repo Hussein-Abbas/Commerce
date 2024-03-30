@@ -86,7 +86,7 @@ def create_listing(request):
         return HttpResponseRedirect(reverse("index"))
 
     return render(request, "auctions/create_listing.html", {
-            "CreateListingForm": form,
+            "categories": Category.objects.all(),
     })
 
 
