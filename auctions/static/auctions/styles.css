@@ -3,35 +3,35 @@ body {
     font-family: Arial, sans-serif;
 }
 
-
 .listing {
     display: flex;
-    font-size: 20px;
-    margin-bottom: 50px;
-    margin-top: 30px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+.listing img {
+    width: 200px;
+    border-radius: 5px;
+    margin-bottom: 10px;
 }
-.listing a {
-    color: black;
+.listing h3 {
+    font-size: 50px;
+    font-weight: 600;
+    margin-top: 0;
+}
+.listing p {
+    margin-bottom: 5px;
+}
+.listing h3 {
+    color: #007bff;
     text-decoration: none;
 }
 
-.listing a:hover {
-    color: #007bff;
-}
-
-.listing-img {
-    flex: 1;
-    display: inline;
-}
-
-.listing-description {
-    flex: 7;
-    display: inline-block;
-    cursor: auto;
-}
-.listing-title {
-    font-weight: 500;
+.listing h3:hover {
     cursor: pointer;
+    text-decoration: underline;
 }
 
 .created_at {
@@ -52,8 +52,8 @@ main {
 
 
 .price {
-    font-size: 25px;
-    font-weight: bold;
+    font-size: 23px;
+    font-weight: 600;
 }
 
 .commenter {
