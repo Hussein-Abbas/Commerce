@@ -6,12 +6,11 @@
             <p class="alert alert-danger">This listing has been closed!</p>
         {% endif %}
         <h1>Listing: {{ listing.title }}</h1>
-        <div>
-            {% if listing.image %}
-                <img src="{{ listing.image }}" alt="{{ listing.title }} image">
-            {% endif %}
-        </div>
-
+        {% if listing.image %}
+            <div>
+                <img width="150" src="{{ listing.image }}" alt="{{ listing.title }} image">
+            </div>
+        {% endif %}
         <p class="description">{{ listing.description}}</p>
         <p class="price">${{ listing.current_price }}</p>
         <Details>
