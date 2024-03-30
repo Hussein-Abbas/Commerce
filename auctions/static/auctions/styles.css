@@ -64,8 +64,3 @@ main {
     margin-left: 20px;
 }
 
-#id_title, #id_image {
-    width: 90%;
-    padding: 3px 8px;
-    margin-bottom: 20px;
-}
