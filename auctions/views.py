@@ -183,11 +183,12 @@ def bid(request):
             })
 
         # Create a new bid.
-        Bid.objects.create(amount=amount, auction_listing=listing, bidder=user)
+        new_bid = Bid.objects.create(amount=amount, auction_listing=listing, bidder=user)
 
         # Update the current price and bidding count of the listing.
         listing.current_price = amount
         listing.bidding_count += 1
+        listing.highest_bid = new_bid
         listing.save()
 
         # Redirect the user to the new listing page.
