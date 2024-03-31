@@ -45,14 +45,22 @@
                 {% endif %}
             </form>
             <hr>
-            <p>{{ listing.bidding_count }} bid(s) so far.</p>
+            <p>
+                {{ listing.bidding_count }} bid(s) so far.
+
+                {% if listing.highest_bid.bidder == user %}
+                    Your bid is the current bid.
+                {% endif %}
+            </p>
             <form action="{% url 'bid' %}" method="post">
                 {% csrf_token %}
                 <div class="form-group">
                     <input class="form-control" type="number" name="amount" min="0.01" step="0.01" required placeholder="Bid">
                 </div>
                 <input type="hidden" name="listing_id" value="{{ listing.pk }}">
-                <button class="btn btn-primary mt-3" type="submit">Place Bid</button>
+                <div class="form-group">
+                    <button class="btn btn-primary mt-3" type="submit">Place Bid</button>
+                </div>
             </form>
         {% endif %}
         <div class="mt-4">
