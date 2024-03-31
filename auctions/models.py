@@ -24,7 +24,7 @@ class AuctionListing(models.Model):
     image = models.URLField(blank=True)
     starting_price = models.DecimalField(max_digits=8, decimal_places=2, blank=False, validators=[MinValueValidator(0.01)])
     current_price = models.DecimalField(max_digits=8, decimal_places=2, validators=[MinValueValidator(0.01)])
-    highest_bid = models.OneToOneField("Bid", related_name="highest_bid", on_delete=models.CASCADE, null=True)
+    highest_bid = models.OneToOneField("Bid", related_name="highest_bid", on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     bidding_count = models.IntegerField(default=0)
     seller = models.ForeignKey(User, related_name="auction_listing", on_delete=models.CASCADE, blank=False)
