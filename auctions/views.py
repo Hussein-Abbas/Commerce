@@ -289,6 +289,7 @@ def category(request, category_id=None):
 
         # Render the category page with its listings.
         return render(request, "auctions/category.html", {
+                "category": category,
                 "listings": listings,
         })
 

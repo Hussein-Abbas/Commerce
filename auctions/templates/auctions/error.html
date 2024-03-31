@@ -1,5 +1,9 @@
 {% extends "auctions/layout.html" %}
 
+{% block title %}
+    Error page
+{% endblock %}
+
 {% block body %}
     {% if message %}
         <p>{{ message }}</p>
