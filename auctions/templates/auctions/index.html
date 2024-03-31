@@ -13,7 +13,17 @@
                                 <p class="price">Price: ${{ listing.current_price }}</p>
                                 <p style="color: rgb(61, 60, 60);">Created at: {{ listing.created_at }}</p>
                             </div>
-                            <img src="{{ listing.image }}" alt="{{ listing }} Image">
+                            {% if listing.image %}
+                                <img src="{{ listing.image }}" alt="{{ listing }} Image">
+                            {% endif %}
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-md-12">
+                    <div class="listing">
+                            <div style="flex: 2">
+                                <h4>No listings</h4>
+                        </div>
                     </div>
                 </div>
             {% endfor %}
