@@ -1,13 +1,33 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-    <ul>
+<div class="container">
+    <div class="row">
         {% for listing in listings %}
-            <a href="{% url 'listing' listing.id %}">
-                <li>{{ listing.title }}</li>
-            </a>
+            <div class="col-md-12">
+                <div class="listing">
+                        <div style="flex: 2">
+                            <a href="{% url 'listing' listing.pk %}">
+                                <h3>{{ listing }}</h3>
+                            </a>
+                            <p class="price">Price: ${{ listing.current_price }}</p>
+                            <p style="color: rgb(61, 60, 60);">Created at: {{ listing.created_at }}</p>
+                        </div>
+                        {% if listing.image %}
+                            <img src="{{ listing.image }}" alt="{{ listing }} Image">
+                        {% endif %}
+                </div>
+            </div>
         {% empty %}
-            <li>No listings in your watch list.</li>
+            <div class="col-md-12">
+                <div class="listing">
+                        <div style="flex: 2">
+                            <h4>No listings</h4>
+                    </div>
+                </div>
+            </div>
         {% endfor %}
-    </ul>
+    </div>
+  </div>
+  
 {% endblock %}
