@@ -61,5 +61,8 @@ To run the Commerce application locally:
 ## Conclusion
 Commerce provides a platform for users to engage in online auctions, allowing them to buy and sell items in a user-friendly environment. With its various features like bidding, commenting, and categorization, it offers a comprehensive solution for online auction needs.
 
+## Video Demonstration
+[![Click to watch the video demonstration](https://img.youtube.com/vi/nZq6e2am_N4/0.jpg)](https://www.youtube.com/watch?v=nZq6e2am_N4)
+
 ## Acknowledgements
 I wish to express my heartfelt appreciation to the CS50 staff for their exceptional materials. Their comprehensive resources were pivotal in expanding my knowledge and skills significantly. This project, assigned as part of CS50W, has served as an excellent learning opportunity, thanks to their dedication to fostering excellence in education.
