@@ -14,7 +14,7 @@
                                 <a href="{% url 'listing' listing.pk %}">
                                     <h3>{{ listing }}</h3>
                                 </a>
-                                <p class="price">Price: ${{ listing.current_price }}</p>
+                                <p class="price">${{ listing.current_price }}</p>
                                 <p style="color: rgb(61, 60, 60);">{{ listing.description }}</p>
                             </div>
                             {% if listing.image %}
