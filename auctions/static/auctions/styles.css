@@ -64,3 +64,11 @@ main {
     margin-left: 20px;
 }
 
+.image {
+    margin-right: 40px;
+}
+
+.title {
+    font-size: 50px;
+    font-weight: 600;
+}
